@@ -1,69 +1,95 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:places/models/place.dart';
 import 'package:places/providers/user_places.dart';
+import 'package:places/widgets/image_input.dart';
+import 'dart:io';
 
-class AddPlacesScreen extends ConsumerStatefulWidget{
+import 'package:places/widgets/location_input.dart';
 
-    const AddPlacesScreen ({super.key});
+class AddPlacesScreen extends ConsumerStatefulWidget {
+  const AddPlacesScreen({super.key});
 
-    @override
+  @override
   ConsumerState<AddPlacesScreen> createState() {
-   return _AddPlacesScreenState();
+    return _AddPlacesScreenState();
   }
 }
 
 class _AddPlacesScreenState extends ConsumerState<AddPlacesScreen> {
-  
-   final _titleController = TextEditingController();
+  final _titleController = TextEditingController();
 
-  
-  void _savePlace(){
+  File? _selectedImage;
+  PlaceLocation? _selectedLocation;
+
+  void _savePlace() {
     final enteredText = _titleController.text;
 
-    if(enteredText.isEmpty){
+    if (enteredText.isEmpty || _selectedImage == null || _selectedLocation == null) {
       return;
     }
-    ref.read(userPlacesProfider.notifier).addPlace(enteredText);
+    ref
+    .read(userPlacesProfider.notifier)
+    .addPlace(enteredText , _selectedImage! , _selectedLocation! );
 
     Navigator.of(context).pop();
   }
-  
-  
-   @override
+
+  @override
   void dispose() {
     _titleController.dispose();
     super.dispose();
   }
- 
 
-    @override
+  @override
   Widget build(BuildContext context) {
-     return Scaffold(
-        appBar:  AppBar(
-            title: const Text('Add New Places'),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Add New Places'),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          children: [
+            TextField(
+              decoration: const InputDecoration(labelText: 'Title'),
+              controller: _titleController,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+
+            const SizedBox(
+              height: 10,
+            ),
+
+            //Image Input
+            ImageInput(
+              onPickImage: (image) {
+                _selectedImage = image;
+              },
+            ),
+
+              const SizedBox(
+              height: 10,
+            ),
+
+            LocationInput(onSelectLocation: (location) {
+              _selectedLocation = location;
+            },),
+
+
+            const SizedBox(
+              height: 16,
+            ),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.add),
+              label: const Text('Add Place'),
+              onPressed: _savePlace,
+            ),
+          ],
         ),
-        body: SingleChildScrollView(
-            padding: const EdgeInsets.all(12),
-        child:  Column(
-            children: [
-                TextField(
-                    decoration: const InputDecoration(labelText: 'Title'),
-                    controller: _titleController,
-                    style: TextStyle(
-                      color:   Theme.of(context).colorScheme.onSurface,
-                ),
-                    ),
-                    //Image Input 
-                const SizedBox(height: 16,) , 
-                ElevatedButton.icon(
-                    icon: const Icon(Icons.add),
-                    label: const Text('Add Place'),
-                    onPressed: _savePlace, 
-                    ),
-            ],
-        ),
-     ),
-     );
+      ),
+    );
   }
 }
